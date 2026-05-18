@@ -73,9 +73,9 @@ exports.getProjectDetails = async (req, res) => {
 
     // Fetch related tasks
     const tasks = await Task.find({
-      projectId: project._id,
-      organizationId: req.user.organizationId,
-    }); 
+  projectId: project._id,
+  organizationId: req.user.organizationId,
+}).populate("projectId", "name"); 
 
     res.status(200).json({
       success: true,
