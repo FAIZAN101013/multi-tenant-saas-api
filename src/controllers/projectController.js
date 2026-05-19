@@ -1,10 +1,8 @@
 const Project = require("../models/Project");
 const Task = require("../models/Task");
 
-// CREATE PROJECT
 exports.createProject = async (req, res) => {
   try {
-
     const { name, description } = req.body;
 
     const project = await Project.create({
@@ -13,56 +11,47 @@ exports.createProject = async (req, res) => {
       organizationId: req.user.organizationId,
     });
 
-    res.status(201).json({
+    return res.status(201).json({
       success: true,
-      project,
+      data: { project },
     });
-
   } catch (error) {
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
-      message: error.message,
+      message: "Failed to create project",
     });
   }
 };
 
-
-// GET ALL PROJECTS
 exports.getProjects = async (req, res) => {
   try {
-
     const projects = await Project.find({
       organizationId: req.user.organizationId,
-    });
+    })
+      .sort({ createdAt: -1 })
+      .lean();
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       count: projects.length,
-      projects,
+      data: { projects },
     });
-
   } catch (error) {
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
-      message: error.message,
+      message: "Failed to fetch projects",
     });
   }
 };
 
-
-
-
-// GET PROJECT DETAILS WITH TASKS
 exports.getProjectDetails = async (req, res) => {
   try {
-
     const { id } = req.params;
 
-    // Find project with tenant isolation
     const project = await Project.findOne({
       _id: id,
       organizationId: req.user.organizationId,
-    });
+    }).lean();
 
     if (!project) {
       return res.status(404).json({
@@ -71,22 +60,21 @@ exports.getProjectDetails = async (req, res) => {
       });
     }
 
-    // Fetch related tasks
     const tasks = await Task.find({
-  projectId: project._id,
-  organizationId: req.user.organizationId,
-}).populate("projectId", "name"); 
+      projectId: project._id,
+      organizationId: req.user.organizationId,
+    })
+      .sort({ createdAt: -1 })
+      .lean();
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
-      project,
-      tasks,
+      data: { project, tasks },
     });
-
   } catch (error) {
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
-      message: error.message,
+      message: "Failed to fetch project",
     });
   }
 };

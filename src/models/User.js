@@ -11,13 +11,14 @@ const userSchema = new mongoose.Schema(
     email: {
       type: String,
       required: true,
-      unique: true,
+      trim: true,
       lowercase: true,
     },
 
     password: {
       type: String,
       required: true,
+      select: false,
     },
 
     organizationId: {
@@ -30,5 +31,8 @@ const userSchema = new mongoose.Schema(
     timestamps: true,
   }
 );
+
+userSchema.index({ email: 1 }, { unique: true });
+userSchema.index({ organizationId: 1 });
 
 module.exports = mongoose.model("User", userSchema);

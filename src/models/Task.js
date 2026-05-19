@@ -31,4 +31,7 @@ const taskSchema = new mongoose.Schema(
   }
 );
 
+taskSchema.index({ organizationId: 1, createdAt: -1 });
+taskSchema.index({ organizationId: 1, projectId: 1, createdAt: -1 });
+
 module.exports = mongoose.model("Task", taskSchema);

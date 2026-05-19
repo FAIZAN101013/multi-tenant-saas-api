@@ -1,18 +1,14 @@
 const Task = require("../models/Task");
 const Project = require("../models/Project");
 
-
-// CREATE TASK
 exports.createTask = async (req, res) => {
   try {
-
     const { title, status, projectId } = req.body;
 
-    // Verify project belongs to same organization
     const project = await Project.findOne({
       _id: projectId,
       organizationId: req.user.organizationId,
-    });
+    }).select("_id");
 
     if (!project) {
       return res.status(404).json({
@@ -28,38 +24,36 @@ exports.createTask = async (req, res) => {
       organizationId: req.user.organizationId,
     });
 
-    res.status(201).json({
+    return res.status(201).json({
       success: true,
-      task,
+      data: { task },
     });
-
   } catch (error) {
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
-      message: error.message,
+      message: "Failed to create task",
     });
   }
 };
 
-
-// GET TASKS
 exports.getTasks = async (req, res) => {
   try {
-
     const tasks = await Task.find({
       organizationId: req.user.organizationId,
-    }).populate("projectId", "name");
+    })
+      .populate("projectId", "name")
+      .sort({ createdAt: -1 })
+      .lean();
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       count: tasks.length,
-      tasks,
+      data: { tasks },
     });
-
   } catch (error) {
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
-      message: error.message,
+      message: "Failed to fetch tasks",
     });
   }
 };

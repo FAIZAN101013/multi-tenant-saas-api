@@ -1,13 +1,11 @@
 const { body } = require("express-validator");
 
-
-// REGISTER VALIDATION
 exports.registerValidation = [
-  body("name")
-    .notEmpty()
-    .withMessage("Name is required"),
+  body("name").trim().notEmpty().withMessage("Name is required"),
 
   body("email")
+    .trim()
+    .normalizeEmail()
     .isEmail()
     .withMessage("Valid email is required"),
 
@@ -16,14 +14,15 @@ exports.registerValidation = [
     .withMessage("Password must be at least 6 characters"),
 
   body("organizationName")
+    .trim()
     .notEmpty()
     .withMessage("Organization name is required"),
 ];
 
-
-// LOGIN VALIDATION
 exports.loginValidation = [
   body("email")
+    .trim()
+    .normalizeEmail()
     .isEmail()
     .withMessage("Valid email is required"),
 

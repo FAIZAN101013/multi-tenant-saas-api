@@ -1,19 +1,12 @@
 const jwt = require("jsonwebtoken");
+const mongoose = require("mongoose");
 
-exports.protect = async (req, res, next) => {
+exports.protect = (req, res, next) => {
   try {
+    const authHeader = req.headers.authorization || "";
+    const tokenMatch = authHeader.match(/^Bearer\s+(.+)$/i);
+    const token = tokenMatch ? tokenMatch[1] : null;
 
-    let token;
-
-    // Get token from headers
-    if (
-      req.headers.authorization &&
-      req.headers.authorization.startsWith("Bearer")
-    ) {
-      token = req.headers.authorization.split(" ")[1];
-    }
-
-    // No token
     if (!token) {
       return res.status(401).json({
         success: false,
@@ -21,14 +14,33 @@ exports.protect = async (req, res, next) => {
       });
     }
 
-    // Verify token
+    if (!process.env.JWT_SECRET) {
+      return res.status(500).json({
+        success: false,
+        message: "Server configuration error",
+      });
+    }
+
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    // Attach user data to request
-    req.user = decoded;
+    if (
+      !decoded.userId ||
+      !decoded.organizationId ||
+      !mongoose.isValidObjectId(decoded.userId) ||
+      !mongoose.isValidObjectId(decoded.organizationId)
+    ) {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid token",
+      });
+    }
 
-    next();
+    req.user = {
+      userId: decoded.userId,
+      organizationId: decoded.organizationId,
+    };
 
+    return next();
   } catch (error) {
     return res.status(401).json({
       success: false,
