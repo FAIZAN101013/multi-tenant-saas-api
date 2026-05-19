@@ -127,4 +127,4 @@ The cleanup focused on replacing internal error messages with safer generic resp
 
 I also improved small code quality issues such as response consistency, unnecessary comments, missing `return` statements after responses, and query indexes for common tenant-filtered lookups.
 
-hi
+
